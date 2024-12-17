@@ -89,7 +89,7 @@ class VMWareConfig(ConfigBase):
                               If a filter is unset it will be ignored. Filters are all treated as regex expressions!
                               If more then one expression should match, a '|' needs to be used
                               """,
-                              config_example="""Example: (exclude all VMs with "replica" in their name 
+                              config_example="""Example: (exclude all VMs with "replica" in their name
                               and all VMs starting with "backup"): vm_exclude_filter = .*replica.*|^backup.*""",
                               options=[
                                 ConfigOption("cluster_exclude_filter",
@@ -382,6 +382,22 @@ class VMWareConfig(ConfigBase):
                          The same behavior also applies for VM disk sizes.""",
                          default_value=True
                          ),
+            ConfigOption("vm_name_as_lowercase",
+                bool,
+                description="""Set vm names to lowercase within Netbox""",
+                default_value=False
+                ),
+            ConfigOption("use_vm_name_regex_pattern",
+                bool,
+                description="""See below, use a regex to set VM name in Netbox.""",
+                default_value=False
+                ),
+            ConfigOption("vm_name_regex_pattern",
+                str,
+                description="""Use a regex pattern to set vm_name to netbox, can be used to replace certain unwanted strings within netbox
+                            only the first match will be used.""",
+                config_example="([a-z0-9]+).*"
+                ),
 
             # removed settings
             ConfigOption("netbox_host_device_role",

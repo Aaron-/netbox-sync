@@ -91,13 +91,6 @@ class VMWareHandler(SourceBase):
         if name is None:
             raise ValueError(f"Invalid value for attribute 'name': '{name}'.")
 
-        #Check if regex pattern is a valid pattern, if the option is being used
-        try:
-            if self.settings.use_vm_name_regex_pattern == True:
-                re.compile(self.settings.vm_name_regex_pattern)
-        except re.error:
-            raise ValueError(f"Invalid regex pattern for attribute 'vm_name_regex_pattern': '{self.settings.vm_name_regex_pattern}'.")
-
         self.inventory = NetBoxInventory()
         self.name = name
 
@@ -112,6 +105,13 @@ class VMWareHandler(SourceBase):
         if self.settings.enabled is False:
             log.info(f"Source '{name}' is currently disabled. Skipping")
             return
+
+        #Check if regex pattern is a valid pattern, if the option is being used
+        try:
+            if self.settings.use_vm_name_regex_pattern == True:
+                re.compile(self.settings.vm_name_regex_pattern)
+        except re.error:
+            raise ValueError(f"Invalid regex pattern for attribute 'vm_name_regex_pattern': '{self.settings.vm_name_regex_pattern}'.")
 
         self._sdk_instance = None
         self.create_sdk_session()
@@ -2066,16 +2066,6 @@ class VMWareHandler(SourceBase):
 
         name = get_string_or_none(grab(obj, "name"))
 
-        if name is not None and self.settings.strip_vm_domain_name is True:
-            name = name.split(".")[0]
-
-        if self.settings.vm_name_as_lowercase is True:
-            name = name.lower()
-
-        if self.settings.use_vm_name_regex_pattern is True:
-            name  = re.sub(self.settings.vm_name_regex_pattern , '\\1', name)
-
-
         #
         # Filtering
         #
@@ -2151,6 +2141,16 @@ class VMWareHandler(SourceBase):
         # filter VMs by name
         if self.passes_filter(name, self.settings.vm_include_filter, self.settings.vm_exclude_filter) is False:
             return
+
+        if name is not None and self.settings.strip_vm_domain_name is True:
+            name = name.split(".")[0]
+
+        if self.settings.vm_name_as_lowercase is True:
+            name = name.lower()
+
+        if self.settings.use_vm_name_regex_pattern is True:
+            name  = re.sub(self.settings.vm_name_regex_pattern , '\\1', name)
+
 
         #
         # Collect data

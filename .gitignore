@@ -18,3 +18,5 @@ cache/*
 
 # settings file
 settings.ini
+settings.yaml
+settings.yml

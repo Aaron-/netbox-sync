@@ -72,6 +72,7 @@ class VMWareHandler(SourceBase):
         NBTenant,
         NBVRF,
         NBVLAN,
+        NBVLANGroup,
         NBCustomField,
         NBVirtualDisk
     ]
@@ -429,9 +430,9 @@ class VMWareHandler(SourceBase):
         name: str
             name of the object to check
         include_filter: regex object
-            regex object of include filter
+            A regex object of include filter
         exclude_filter: regex object
-            regex object of exclude filter
+            A regex object of exclude filter
 
         Returns
         -------
@@ -519,7 +520,7 @@ class VMWareHandler(SourceBase):
         object_type: (NBDevice, NBVM)
             type of NetBox device to find in inventory
         mac_list: list
-            list of MAC addresses to compare against NetBox interface objects
+            a list of MAC addresses to compare against NetBox interface objects
 
         Returns
         -------
@@ -718,7 +719,7 @@ class VMWareHandler(SourceBase):
         Returns
         -------
         tag_list: list
-            list of NBTag objets retrieved from vCenter for this object
+            a list of NBTag objets retrieved from vCenter for this object
         """
 
         if obj is None:
@@ -968,7 +969,7 @@ class VMWareHandler(SourceBase):
         look for longest matching IP Prefix in the same site. If this failed we try to find the longest
         matching global IP Prefix.
 
-        If a IP Prefix was found then we try to get the VRF and VLAN for this prefix. Now we compare
+        If an IP Prefix was found then we try to get the VRF and VLAN for this prefix. Now we compare
         if interface VLAN and prefix VLAN match up and warn if they don't. Then we try to add data to
         the IP address if not already set:
 
@@ -979,7 +980,7 @@ class VMWareHandler(SourceBase):
 
         And we also set primary IP4/6 for this object depending on the "set_primary_ip" setting.
 
-        If a IP address is set as primary IP for another device then using this IP on another
+        If an IP address is set as primary IP for another device then using this IP on another
         device will be rejected by NetBox.
 
         Setting "always":
@@ -999,7 +1000,7 @@ class VMWareHandler(SourceBase):
         Parameters
         ----------
         object_type: (NBDevice, NBVM)
-            NetBoxObject sub class of object to add
+            NetBoxObject subclass of object to add
         object_data: dict
             data of object to add/update
         pnic_data: dict
@@ -1007,13 +1008,13 @@ class VMWareHandler(SourceBase):
         vnic_data: dict
             data of virtual interfaces of this object, interface name as key
         nic_ips: dict
-            dict of ips per interface of this object, interface name as key
+            a dict of ips per interface of this object, interface name as key
         p_ipv4: str
             primary IPv4 as string including netmask/prefix
         p_ipv6: str
             primary IPv6 as string including netmask/prefix
         vmware_object: (vim.HostSystem, vim.VirtualMachine)
-            vmware object to pass on to 'add_update_interface' method to setup reevaluation
+            vmware object to pass on to 'add_update_interface' method to set up reevaluation
         disk_data: list
             data of discs which belong to a VM
 
@@ -1129,7 +1130,7 @@ class VMWareHandler(SourceBase):
                 object_type == NBVM and disk_data is not None and len(disk_data) > 0:
 
             # create pairs of existing and discovered disks.
-            # currently these disks are only used within the VM model. that's we we use this simple approach and
+            # currently these disks are only used within the VM model. that's why we use this simple approach and
             # just rewrite disk as they appear in order.
             # otherwise we would need to implement a matching function like matching interfaces.
             disk_zip_list = zip_longest(
@@ -1309,7 +1310,7 @@ class VMWareHandler(SourceBase):
         Parameters
         ----------
         obj: vim.Datacenter
-            datacenter object
+            a datacenter object
 
         """
         if self.settings.set_source_name_as_cluster_group is True:
@@ -1644,7 +1645,7 @@ class VMWareHandler(SourceBase):
         serial = None
 
         for serial_num_key in ["SerialNumberTag", "ServiceTag", "EnclosureSerialNumberTag"]:
-            if serial_num_key in identifier_dict.keys():
+            if serial_num_key in identifier_dict.keys() and self.settings.collect_hardware_serial is True:
                 log.debug2(f"Found {serial_num_key}: {get_string_or_none(identifier_dict.get(serial_num_key))}")
                 if serial is None:
                     serial = get_string_or_none(identifier_dict.get(serial_num_key))
@@ -2025,8 +2026,8 @@ class VMWareHandler(SourceBase):
                     vnic_ips[vnic_name].append(int_v6)
 
                     # set first valid IPv6 address as primary IPv6
-                    # not the best way but maybe we can find more information in "spec.ipRouteSpec"
-                    # about default route and we could use that to determine the correct IPv6 address
+                    # not the best way, but maybe we can find more information in "spec.ipRouteSpec"
+                    # about default route, and we could use that to determine the correct IPv6 address
                     if vnic_is_primary is True and host_primary_ip6 is None:
                         host_primary_ip6 = int_v6
 
@@ -2042,10 +2043,10 @@ class VMWareHandler(SourceBase):
         Parse a vCenter VM  add to NetBox once all data is gathered.
 
         VMs are parsed twice. First only "online" VMs are parsed and added. In the second
-        round also "offline" VMs will be parsed. This helps of VMs are cloned and used
+        round also "offline" VMs will be parsed. This helps if VMs are cloned and used
         for upgrades but then have the same name.
 
-        First VM is filtered:
+        First VM will be filtered:
              VM has a cluster and is it permitted
              was VM with same name and cluster already parsed
              does the VM pass the vm_include_filter and vm_exclude_filter

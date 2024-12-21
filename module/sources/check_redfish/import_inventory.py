@@ -270,7 +270,7 @@ class CheckRedfish(SourceBase):
             if grab(ps, "data.device") == self.device_object:
                 current_ps.append(ps)
 
-        current_ps.sort(key=lambda x: grab(x, "data.name"))
+        current_ps.sort(key=lambda x: grab(x, "data.name") or "")
 
         ps_index = 1
         ps_items = list()
@@ -895,7 +895,7 @@ class CheckRedfish(SourceBase):
         Parameters
         ----------
         items: list
-            list of items to update
+            a list of items to update
 
         Returns
         -------
@@ -944,7 +944,7 @@ class CheckRedfish(SourceBase):
                 unmatched_inventory_items.append(item)
 
         # sort unmatched items by full_name
-        unmatched_inventory_items.sort(key=lambda x: x.get("full_name"))
+        unmatched_inventory_items.sort(key=lambda x: x.get("full_name") or "")
 
         # iterate over current NetBox inventory items
         # if name did not match try to assign unmatched items in alphabetical order
@@ -974,7 +974,7 @@ class CheckRedfish(SourceBase):
         Parameters
         ----------
         item_data: dict
-            dict with data for item to update
+            a dict with data for item to update
         inventory_object: NBInventoryItem, None
             the NetBox inventory item to update.
 
